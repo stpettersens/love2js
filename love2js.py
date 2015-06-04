@@ -13,7 +13,9 @@ import os
 import re
 import glob
 import json
+import shutil
 import codecs
+import zipfile
 import argparse
 from datetime import datetime
 import xml.dom.minidom as xml
@@ -26,7 +28,7 @@ class love2js:
 
 	gulp = [ 
 	'gulp:~3.9.0', 
-	'gulp-concat:~2.5.2', 
+	'gulp-concat:~2.5.2',
 	'gulp-rename:~1.2.2', 
 	'gulp-insert:~0.4.0', 
 	'gulp-uglify:~1.2.0'
@@ -40,8 +42,9 @@ class love2js:
 
 	map_lua  = []
 	map_js   = [] 
+	use_archive = False
 
-	def __init__(self, directory, out, manifest, generate, verbose, version, info):
+	def __init__(self, directory, lovefile, out, manifest, generate, verbose, version, info):
 		if len(sys.argv) == 1 or info:
 			print(__doc__) # Display program information.
 		elif version:
@@ -54,6 +57,11 @@ class love2js:
 			if out == None: out = 'html5'
 			self.loadManifest(manifest)
 			self.loadConversionMap()
+
+			if lovefile != None:
+				self.extractLOVEArchive(lovefile)
+
+			self.copyJSLibs(out)
 			self.generateGraphics(out)
 			self.generateJS()
 			self.generatePackage()
@@ -61,13 +69,14 @@ class love2js:
 
 	# Generate a manifest.
 	def generateManifest(self, mout):
-		name = raw_input('Name: ')
+		name = raw_input('Name (no spaces): ')
 		version = raw_input('Version: ')
 		desc = raw_input('Description: ')
 		author = raw_input('Author: ')
 		email = raw_input('E-mail: ')
 		license = raw_input('License: ')
 		homepage = raw_input('Home page: ')
+		_file = raw_input('Filename without ext (e.g. mygame): ')
 
 		xmlns = 'xmlns="https://stpettersens.github.io/love2js/manifest/1.0">'
 		manifest = xml.Document()
@@ -103,7 +112,7 @@ class love2js:
 		h.appendChild(h_is)
 		ff = manifest.createElement('file')
 		mf.appendChild(ff)
-		ff_is = manifest.createTextNode(homepage)
+		ff_is = manifest.createTextNode(_file)
 		h.appendChild(ff_is)
 
 		f = codecs.open(mout, 'w', 'utf-8')
@@ -124,6 +133,7 @@ class love2js:
 
 	# Load a manifest.
 	def loadManifest(self, manifest):
+		_print('Loading manifest...')
 		if os.path.isfile(manifest):
 			tree = ET.parse(manifest)
 			root = tree.getroot()
@@ -146,11 +156,37 @@ class love2js:
 				love2js.map_lua.append(child.find('lua').text)
 				love2js.map_js.append(child.find('js').text)
 		else:
-			print('Coversion map file required ({0}). Not found.\nTerminating.'.format(map_file))
+			print('Conversion map file required ({0}). Not found.\nTerminating.'.format(map_file))
 			sys.exit(1)
+
+
+	# Extract the contents of a LOVE game (archive) file.
+	def extractLOVEArchive(self, love_game):
+		love2js.use_archive = True
+		if zipfile.is_zipfile(love_game):
+			_print('Extracting LOVE game (ZIP)...')	
+			with zipfile.ZipFile(love_game, 'r') as archive:
+				archive.extractall()
+		else:
+			f = open(love_game, 'rb')
+			magic = f.read(1) + f.read(2)
+			f.close()
+
+			if magic.startswith('7z'):
+				_print('Extracting LOVE game (7z)...')	
+				redirect = ''
+				if os.name == 'nt':
+					redirect  = ' > a.tmp 2>&1'
+				else:
+					redirect =  ' >> /dev/null 2&1'
+
+				os.system('7z x {0} {1}'.format(love_game, redirect))
+				if os.name == 'nt': os.unlink('a.tmp')
+
 
 	# Generate packages.json file for npm.
 	def generatePackage(self):
+		_print('Generating package.json...')
 		gulp = love2js.gulp[0].split(':')
 		concat = love2js.gulp[1].split(':')
 		rename = love2js.gulp[2].split(':')
@@ -183,12 +219,18 @@ class love2js:
 		f.write(data + '\n')
 		f.close()
 
-	# Generate graphics (data URIs and graphics.js file).
-	def generateGraphics(self, directory):
-		use_graphics = False
+	# Copy each JavaScript library in /libs directory to build.
+	def copyJSLibs(self, directory):
 		if not os.path.exists(directory):
 			os.mkdir(directory)
+		for js in glob.glob('libs/*.js'):
+			love2js.js.append(re.sub('libs\\\\|libs/js', '', js))
+			shutil.copy(js, 'html5/')
 
+	# Generate graphics (data URIs and graphics.js file).
+	def generateGraphics(self, directory):
+		_print('Generating graphics and graphics.js...')
+		use_graphics = False
 		for graphic in glob.glob('gfx/*.png'):
 			use_graphics = True
 			encoded = open(graphic, 'rb').read().encode('base64')
@@ -240,6 +282,7 @@ class love2js:
 
 	# Port each file JavaScript file from each Love2d Lua file.
 	def generateJS(self):
+		_print('Generating game scripts...')
 		for lua in glob.glob('*.lua'):
 			f = codecs.open(lua, 'r', 'utf-8')
 			love2js.lua = f.readlines()
@@ -257,47 +300,102 @@ class love2js:
 			jsf = lua.split('.')
 			love2js.js.append(jsf[0] + '.js')
 			f = codecs.open('html5/' + jsf[0] + '.js', 'w', 'utf-8')
-			f.write(js[0])
-			f.write('\nwindow.onload = function() {\n')
-			f.write('\nvar canvas = document.getElementById(\'game\');\n')
-			f.write('canvas.style.marginLeft = \'auto\';\n')
-			f.write('canvas.style.marginRight = \'auto\';\n')
-			f.write('canvas.style.display = \'block\';\n')
-			f.write('canvas.style.border = \'1px dotted #000000\';\n')
-			
-			for line in js[1:]:
-				f.write(line)
+			if lua == 'main.lua':
+				f.write('window.onload = function() {\n')
+				f.write('\nvar canvas = document.getElementById(\'game\');\n')
+				f.write('canvas.style.marginLeft = \'auto\';\n')
+				f.write('canvas.style.marginRight = \'auto\';\n')
+				f.write('canvas.style.display = \'block\';\n')
+				f.write('canvas.style.border = \'1px dotted #000000\';\n')
+				
+				for line in js:
+					f.write(line)
 
-			f.write('\nfunction canvas_setMode(width, height) {\n')
-			f.write('\tcanvas.width = width.toString();\n\tcanvas.height = height.toString();\n}\n')
+				f.write('\nfunction love_setMode(width, height) {\n')
+				f.write('\tcanvas.width = width.toString();\n\tcanvas.height = height.toString();\n}\n')
 
-			f.write('\nfunction canvas_setBackgroundColor(r, g, b) {\n')
-			f.write('\tcanvas.style.backgroundColor = \'rgb(\'+r+\',\'+g+\',\'+b+\')\';\n}\n')
+				f.write('\nfunction love_setBackgroundColor(r, g, b) {\n')
+				f.write('\tcanvas.style.backgroundColor = \'rgb(\' + r + \',\' + g + \',\' + b + \')\';\n}\n')
 
-			f.write('\nfunction canvas_print(message, x, y) {\n')
-			f.write('\tvar context = canvas.getContext(\'2d\');\n')
-			f.write('\tcontext.font = \'10pt Verdana\';\n')
-			f.write('\tcontext.fillStyle = \'white\';\n')
-			f.write('\tcontext.fillText(message, x, y);\n')
-			f.write('}\n')
+				f.write('\nfunction love_setTitle(title) {\n')
+				f.write('\tdocument.title = title;\n')
+				f.write('\tdocument.getElementById(\'game-title\').innerText = title;\n}\n')
 
-			f.write('\nfunction canvas_getGraphic(graphic) {\n')
-			f.write('\treturn graphics[gfx_fns.indexOf(graphic)];\n}\n')
+				f.write('\nfunction love_print(message, x, y) {\n')
+				f.write('\tvar context = canvas.getContext(\'2d\');\n')
+				f.write('\tcontext.font = \'10pt Verdana\';\n')
+				f.write('\tcontext.fillStyle = \'white\';\n')
+				f.write('\tcontext.fillText(message, x, y);\n')
+				f.write('}\n')
 
-			f.write('\nfunction canvas_drawGraphic(graphic, x, y) {\n')
-			f.write('\tvar context = canvas.getContext(\'2d\');\n')
-			f.write('\tvar g = new Image();\n\tg.src = graphic;\n')
-			f.write('\tcontext.drawImage(g, x, y, 71, 96);\n}\n')
-			f.write('\nlove_load();\nlove_draw();\n}\n')
+				f.write('\nfunction love_getGraphic(graphic) {\n')
+				f.write('\treturn graphics[gfx_fns.indexOf(graphic)];\n}\n')
+
+				f.write('\nfunction love_drawGraphic(graphic, x, y) {\n')
+				f.write('\tvar context = canvas.getContext(\'2d\');\n')
+				f.write('\tvar g = new Image();\n\tg.src = graphic;\n')
+				f.write('\tcontext.drawImage(g, x, y, g.width, g.height);\n}\n')
+
+				f.write('\nfunction love_drawRectangle(type, x, y, width, height) {\n')
+				f.write('\tvar context = canvas.getContext(\'2d\');\n')
+				f.write('\tif(type == \'fill\') {\n')
+				f.write('\t\tcontext.fillRect(x, y, width, height);\n\t}\n')
+				f.write('\telse {\n\t\tcontext.rect(x, y, width, height);\n\t\tcontext.stroke();\n\t}\n}\n')
+				f.write('\nlove_load();\nlove_draw();\n}\n')
+			else:
+				for line in js:
+					f.write(line)
+
 			f.close()
+
+			for js in glob.glob('html5/*.js'):
+
+				f = codecs.open(js, 'r', 'utf-8')
+				lines = f.readlines()
+				f.close()
+
+				newLines = []
+				class_name = ''
+				for line in lines:
+					if line.startswith('// Class is'):
+						cd = line.split('=')
+						class_name = cd[1].lstrip().rstrip()
+
+				for line in lines:
+					pattern = '^(function) ({0})\.(\w+)(.*)'.format(class_name)
+					m = re.match(pattern, line)
+					if m != None:
+						line = '{0}.prototype.{1} = {2}{3}'.format(m.group(2), m.group(3), m.group(1), m.group(4))
+						line = line.rstrip() + ' {\n'
+						line = re.sub('\{ \{', '{', line)
+
+					pattern = '(\w+ \=) ([A-Z]{1}\w+)\s+(\(.*)'
+					m = re.search(pattern, line)
+					if m != None:
+						line = '\t{0} new {1}{2}'.format(m.group(1), m.group(2), m.group(3))
+
+
+					pattern = '(var*) (\w+ \=) ([A-Z]{1}\w+)\s+(\(.*)'
+					m = re.search(pattern, line)
+					if m != None:
+						line = '\t{0} {1} new {2}{3}'.format(m.group(1), m.group(2), m.group(3), m.group(4))
+
+					newLines.append(line)
+
+				f = codecs.open(js, 'w', 'utf-8')
+				for line in newLines:
+					f.write(line)
+				f.close()
 
 	# Generate Gulpfile for Gulp.js
 	def generateGulpfile(self):
+		_print('Generating Gulpfile.js...')
 		dt = str(datetime.now())
 		m = re.match('(\d{4})', dt)
 		year = str(m.group(0))
 		copyright = 'Copyright {0} {1}'.format(year, love2js.package[3])
 		license = '\\nReleased under the {0} License.'.format(love2js.package[4])
+		uses = 'Uses sprintf-js | Alexandru Marasteanu <hello@alexei.ro> (http://alexei.ro/) | BSD-3-Clause'
 
 		f = codecs.open('html5/Gulpfile.js', 'w', 'utf-8')
 		f.write('/*\n\tGulpfile to generate minified JavaScript file for game from sources.\n*/\n')
@@ -314,7 +412,8 @@ class love2js:
 		f.write('\t.pipe(rename(\'{0}.min.js\'))\n'.format(love2js.package[6]))
 		f.write('\t.pipe(uglify())\n')
 		f.write('\t.pipe(insert.prepend(\'/*\\n{0}\\n\'+\n'.format(love2js.package[0]))
-		f.write('\t\'{0}\'+\n\t\'{1}\\n{2}\\n*/\\n\'))\n'.format(copyright, license, love2js.package[5]))
+		f.write('\t\'{0}\'+\n\t\'{1}\\n{2}\\n\\n\'+\n\t\'{3}\\n*/\\n\'))\n'
+		.format(copyright, license, love2js.package[5], uses))
 		f.write('\t.pipe(gulp.dest(\'dist\'));')
 		f.write('\n});\n\n')
 		f.write('gulp.task(\'html\', function() {\n')
@@ -322,7 +421,7 @@ class love2js:
 		f.write('\t\'\\n<title>{0}<\\/title>\\n\'+\n'.format(love2js.package[0]))
 		f.write('\t\'<script type="text/javascript" src="{0}.min.js"></script>\\n\'+\n'
 		.format(love2js.package[6]))
-		f.write('\t\'</head>\\n<body>\\n<h3 style="text-align: center;">{0}</h3>\\n\'+\n'
+		f.write('\t\'</head>\\n<body>\\n<h3 id="game-title" style="text-align: center;">{0}</h3>\\n\'+\n'
 		.format(love2js.package[0]))
 		f.write('\t\'<canvas id="game"></canvas>\\n</body>\\n</html>\\n\';\n')
 		f.write('\tfs.writeFileSync(\'index.html\', html);\n')
@@ -348,12 +447,14 @@ def _print(message):
 parser = argparse.ArgumentParser(description='love2js: Convert a Love2D game to a JavaScript'
 + '-based HTML5 game. ')
 parser.add_argument('-d', '--directory', action='store', dest='directory', metavar="DIRECTORY")
+parser.add_argument('-l', '--lovefile', action='store', dest='lovefile', metavar="LOVE GAME FILE")
 parser.add_argument('-o', '--out', action='store', dest='out', metavar="OUT_DIRECTORY")
 parser.add_argument('-m', '--manifest', action='store', dest='manifest', metavar="MANIFEST")
-parser.add_argument('-g', '--generate', action='store', dest='generate', metavar="MANIFEST_TO_GENERATE")
+parser.add_argument('-g', '--generate', action='store', dest='generate', metavar="MANIFEST TO GENERATE")
 parser.add_argument('-q', '--quiet', action='store_false', dest='verbose')
 parser.add_argument('-v', '--version', action='store_true', dest='version')
 parser.add_argument('-i', '--info', action='store_true', dest='info')
 argv = parser.parse_args()
 
-love2js(argv.directory, argv.out, argv.manifest,argv.generate, argv.verbose, argv.version, argv.info)
+love2js(argv.directory, argv.lovefile, argv.out, argv.manifest,argv.generate, argv.verbose,
+argv.version, argv.info)

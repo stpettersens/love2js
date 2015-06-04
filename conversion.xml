@@ -1,12 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <conversion>
 	<statement>
+		<lua>require</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>local self =</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>return self</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>^[A-Z]{1}\w+ = {}</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>^[A-Z]{1}\w+\.__index</lua>
+		<js>// Class is </js>
+	</statement>
+	<statement>
 		<lua>--</lua>
 		<js>//</js>
 	</statement>
 	<statement>
+		<lua>~=</lua>
+		<js>!==</js>
+	</statement>
+	<statement>
+		<lua>math.</lua>
+		<js>Math.</js>
+	</statement>
+	<statement>
+		<lua>local</lua>
+		<js>var</js>
+	</statement>
+	<statement>
+		<lua>.match</lua>
+		<js>.split</js>
+	</statement>
+	<statement>
+		<lua>\(\[\^\,\]\+\)\,\(\[\^\,\]\+\)</lua>
+		<js> </js>
+	</statement>
+	<statement>
+		<lua>:</lua>
+		<js>.</js>
+	</statement>
+	<statement>
+		<lua>.create</lua>
+		<js> </js>
+	</statement>
+	<statement>
+		<lua>and</lua>
+		<js>&amp;&amp;</js>
+	</statement>
+	<statement>
+		<lua>local self</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>self</lua>
+		<js>this</js>
+	</statement>
+	<statement>
 		<lua>nil</lua>
 		<js>null</js>
+	</statement>
+	<statement>
+		<lua>if</lua>
+		<js>if(</js>
+	</statement>
+	<statement>
+		<lua>elseif</lua>
+		<js>else if</js>
+	</statement>
+	<statement>
+		<lua>then</lua>
+		<js>) {</js>
+	</statement>
+	<statement>
+		<lua>#</lua>
+		<js>love_getLength</js>
 	</statement>
 	<statement>
 		<lua>\(\)</lua>
@@ -21,32 +97,52 @@
 		<js>love_draw</js>
 	</statement>
 	<statement>
+		<lua>love.update</lua>
+		<js>love_update</js>
+	</statement>
+	<statement>
 		<lua>print</lua>
 		<js>console.log</js>
 	</statement>
 	<statement>
+		<lua>string.format</lua>
+		<js>sprintf</js>
+	</statement>
+	<statement>
+		<lua>tostring</lua>
+		<js>love_tostring</js>
+	</statement>
+	<statement>
+		<lua>tonumber</lua>
+		<js>love_tonumber</js>
+	</statement>
+	<statement>
 		<lua>love.graphics.newImage</lua>
-		<js>canvas_getGraphic</js>
+		<js>love_getGraphic</js>
 	</statement>
 	<statement>
 		<lua>love.graphics.draw</lua>
-		<js>canvas_drawGraphic</js>
+		<js>love_drawGraphic</js>
+	</statement>
+	<statement>
+		<lua>love.graphics.rectangle</lua>
+		<js>love_drawRectangle</js>
 	</statement>
 	<statement>
 		<lua>love.graphics.console.log</lua>
-		<js>canvas_print</js>
+		<js>love_print</js>
 	</statement>
 	<statement>
 		<lua>love.window.setMode</lua>
-		<js>canvas_setMode</js>
+		<js>love_setMode</js>
 	</statement>
 	<statement>
 		<lua>love.graphics.setBackgroundColor</lua>
-		<js>canvas_setBackgroundColor</js>
+		<js>love_setBackgroundColor</js>
 	</statement>
 	<statement>
 		<lua>love.window.setTitle</lua>
-		<js>//</js>
+		<js>love_setTitle</js>
 	</statement>
 	<statement>
 		<lua>end</lua>
