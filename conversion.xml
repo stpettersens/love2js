@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<conversion>
+	<statement>
+		<lua>--</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>nil</lua>
+		<js>null</js>
+	</statement>
+	<statement>
+		<lua>\(\)</lua>
+		<js>() {</js>
+	</statement>
+	<statement>
+		<lua>love.load</lua>
+		<js>love_load</js>
+	</statement>
+	<statement>
+		<lua>love.draw</lua>
+		<js>love_draw</js>
+	</statement>
+	<statement>
+		<lua>print</lua>
+		<js>console.log</js>
+	</statement>
+	<statement>
+		<lua>love.graphics.newImage</lua>
+		<js>canvas_getGraphic</js>
+	</statement>
+	<statement>
+		<lua>love.graphics.draw</lua>
+		<js>canvas_drawGraphic</js>
+	</statement>
+	<statement>
+		<lua>love.graphics.console.log</lua>
+		<js>canvas_print</js>
+	</statement>
+	<statement>
+		<lua>love.window.setMode</lua>
+		<js>canvas_setMode</js>
+	</statement>
+	<statement>
+		<lua>love.graphics.setBackgroundColor</lua>
+		<js>canvas_setBackgroundColor</js>
+	</statement>
+	<statement>
+		<lua>love.window.setTitle</lua>
+		<js>//</js>
+	</statement>
+	<statement>
+		<lua>end</lua>
+		<js>}</js>
+	</statement>
+</conversion>

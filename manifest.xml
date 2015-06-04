@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+	<name>hello-world</name>
+	<version>1.0.0</version>
+	<description>hello world example</description>
+	<author>Sam Saint-Pettersen</author>
+	<email>s.stpettersen+github@gmail.com</email>
+	<license>MIT</license>
+	<homepage>http://github.com/stpettersens</homepage>
+	<file>helloworld</file>
+</manifest>
