@@ -6,7 +6,7 @@
 	</statement>
 	<statement>
 		<lua>local self =</lua>
-		<js>//</js>
+		<js>{ //</js>
 	</statement>
 	<statement>
 		<lua>return self</lua>
