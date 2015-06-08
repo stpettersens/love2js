@@ -363,11 +363,14 @@ class love2js:
 
 				for line in lines:
 
+					line = re.sub('\t', '    ', line); # Replace a tab with 4 spaces.
+
 					pattern = '^(function) ([A-Z]*\w+)(.*)'
 					m = re.match(pattern, line)
 					if m != None:
-						line = line.rstrip()
-						line = '{0} {1}{2}'.format(m.group(1), m.group(2), m.group(3))
+						pass
+						#line = line.rstrip()
+						#line = '{0} {1}{2}'.format(m.group(1), m.group(2), m.group(3))
 
 					pattern = '^(function) ({0})\.(\w+)(.*)'.format(class_name)
 					m = re.match(pattern, line)
@@ -389,6 +392,7 @@ class love2js:
 
 					newLines.append(line)
 					i = i + 1
+
 
 				f = codecs.open(js, 'w', 'utf-8')
 				for line in newLines:

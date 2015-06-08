@@ -53,7 +53,7 @@
 		<js> </js>
 	</statement>
 	<statement>
-		<lua>and</lua>
+		<lua>\band\b</lua>
 		<js>&amp;&amp;</js>
 	</statement>
 	<statement>
@@ -73,7 +73,11 @@
 		<js>if(</js>
 	</statement>
 	<statement>
-		<lua>elseif</lua>
+		<lua>\belse\b</lua>
+		<js>else {</js>
+	</statement>
+	<statement>
+		<lua>else {if</lua>
 		<js>else if</js>
 	</statement>
 	<statement>
@@ -145,7 +149,7 @@
 		<js>love_setTitle</js>
 	</statement>
 	<statement>
-		<lua>end</lua>
+		<lua>\bend\b</lua>
 		<js>}</js>
 	</statement>
 </conversion>
