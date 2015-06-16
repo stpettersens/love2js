@@ -1,3 +1,6 @@
 *.lua
-html5
-gfx
+*.ast
+*.js
+node_modules/
+html5/
+gfx/
