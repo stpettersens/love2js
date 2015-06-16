@@ -4,5 +4,5 @@
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module "luaparse" {
-	export function parse(code: string, options: Object): string;
+	export function parse(code: string, options: Object): Object;
 }
