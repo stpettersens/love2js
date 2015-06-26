@@ -2,8 +2,8 @@
 	Lua to JavaScript conversion utility.
 */
 
-/// <reference path='node.d.ts' />
-/// <reference path='luaparse.d.ts' />
+/// <reference path='typings/node.d.ts' />
+/// <reference path='typings/luaparse.d.ts' />
 /// <reference path='LuaASTParser.ts' />
 
 import LuaASTParser = require('./LuaASTParser');

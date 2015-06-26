@@ -3,6 +3,7 @@ Generate intermediate JavaScript from luaparser's JSON Abstract Syntax Tree.
 */
 
 class LuaASTParser {
+	
 	private debug: boolean;
 	private var_names: string[];
 	private var_values: string[];

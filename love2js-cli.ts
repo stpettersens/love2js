@@ -6,8 +6,8 @@
 	Released under the MIT/X11 License.
 */
 
-/// <reference path='node.d.ts' />
-/// <reference path='node-getopt.d.ts' />
+/// <reference path='typings/node.d.ts' />
+/// <reference path='typings/node-getopt.d.ts' />
 
 import Love2JS = require('./Love2JS');
 import opt = require('node-getopt');

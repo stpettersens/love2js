@@ -6,13 +6,14 @@
 	Released under the MIT/X11 License.
 */
 
-/// <reference path='node.d.ts' />
-/// <reference path='luaparse.d.ts' />
+/// <reference path='typings/node.d.ts' />
+/// <reference path='typings/luaparse.d.ts' />
 
 import fs = require('fs');
 import lua = require('luaparse');
 
 class Love2JS {
+	
 	private quiet: boolean;
 	private version: string;
 	private gulp: string[];
