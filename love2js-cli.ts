@@ -6,10 +6,10 @@
 	Released under the MIT/X11 License.
 */
 
-/// <reference path='typings/node.d.ts' />
-/// <reference path='typings/node-getopt.d.ts' />
+/// <reference path="typings/node.d.ts" />
+/// <reference path="typings/node-getopt.d.ts" />
 
-import Love2JS = require('./Love2JS');
+import Love2JS = require('./love2js');
 import opt = require('node-getopt');
 
 var cli = opt.create([
@@ -24,12 +24,12 @@ var cli = opt.create([
 ])
 .bindHelp();
 
-var arguments: Object = cli.parseSystem();
+var args: Object = cli.parseSystem();
 var strargs: string[] = new Array<string>();
-for(var key in arguments) {
-	if(Array.isArray(arguments[key])) {
-		for(var i: number = 0; i < arguments[key].length; i++) {
-			strargs.push(arguments[key][i]);
+for(var key in args) {
+	if(Array.isArray(args[key])) {
+		for(var i: number = 0; i < args[key].length; i++) {
+			strargs.push(args[key][i]);
 		}
 	}
 }
