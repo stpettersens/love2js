@@ -37,12 +37,14 @@ class Love2JS {
 	private graphics: string[];
 	private js: string[];
 	private use_archive: boolean;
+	private use_graphics: boolean;
 
 	constructor(directory: string, lovefile: string, out: string, manifest: string,
 	generate: boolean, verbose: boolean, version: boolean) {
 		this.version = 'love2js v1.0.0';
 		this.verbose = true;
 		this.use_archive = false;
+		this.use_graphics = false;
 
 		this.package = new Array<string>();
 		this.js = new Array<string>();
@@ -181,7 +183,22 @@ class Love2JS {
 
 	// Generate graphics (data URIs and graphics.js file).
 	private generateGraphics(directory: string): void {
-		// TODO
+		_print(this.verbose, 'Generating graphics and graphics.js...');
+		var graphics: string[] = glob.sync('gfx/*.png');
+		for(var i: number = 0; graphics.length; i++) {
+			this.use_graphics = true;
+			var data: string = fs.readFileSync(graphics[i]);
+			var encoded: string = new Buffer(data).toString('base64');
+			this.gfx_fns.push(graphics[i].replace('\\\\', '/', graphic));
+			this.graphics.push('data:image/png;base64,' + encoded);
+		}
+		
+		if(use_graphics) {
+			this.js.push('graphics.js');
+			var data: string = '/* Graphics for generated game. */';
+			data += '\nvar gfx_fns = [\n';
+			
+		}
 	}
 
 	// Port each Love2d Lua file to JavaScript.
