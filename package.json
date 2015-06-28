@@ -1,0 +1,40 @@
+{
+  "name": "love2js",
+  "version": "1.0.0",
+  "description": "Utility to convert a Love2D game to a JavaScript-based HTML5 game.",
+  "main": "love2js-cli.ts",
+  "scripts": {
+    "build": "gulp",
+    "test": "echo //TODO"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/stpettersens/love2js"
+  },
+  "keywords": [
+    "love2d",
+    "js",
+    "utility",
+    "conversion",
+    "tool"
+  ],
+  "author": "Sam Saint-Pettersen <s.stpettersen+github@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/stpettersens/love2js/issues"
+  },
+  "dependencies": {
+    "gulp": "~3.9.0",
+    "gulp-typescript": "~2.7.7",
+    "gulp-insert": "~0.4.0",
+    "node-getopt": "~0.2.3",
+    "luaparse": "~0.1.15",
+    "prompt": "~0.2.14",
+    "unzip": "~0.1.11",
+    "xml": "~1.0.0",
+    "pixl-xml": "~1.0.3",
+    "sprintf-js": "~1.0.2",
+    "node-7z": "~0.3.0",
+    "glob": "~5.0.12"
+  }
+}
