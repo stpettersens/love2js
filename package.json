@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Utility to convert a Love2D game to a JavaScript-based HTML5 game.",
   "main": "love2js-cli.ts",
+  "preferGlobal": true,
   "scripts": {
     "build": "gulp",
     "test": "echo //TODO"
