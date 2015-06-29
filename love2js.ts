@@ -47,6 +47,8 @@ class Love2JS {
 		this.use_graphics = false;
 
 		this.package = new Array<string>();
+		this.gfx_fns = new Array<string>();
+		this.graphics = new Array<string>();
 		this.js = new Array<string>();
 
 		if(version) {
@@ -57,7 +59,7 @@ class Love2JS {
 		}
 		else {
 			if(verbose) this.verbose = true; // Set to be verbose.
-			//if(manifest == '') 
+			//if(manifest == '')
 			manifest = 'manifest.xml'; // Default file is manifest.xml
 			if(out == '') out = 'html5';
 			this.loadManifest(manifest);
@@ -67,8 +69,8 @@ class Love2JS {
 			this.extractLOVEArchive(lovefile);
 			//}
 			this.copyJSLibs(out);
-			//this.generateGraphics(out);
-			//this.generateJS();
+			this.generateGraphics(out);
+			this.generateJS();
 			this.generatePackage();
 			this.generateGulpfile();
 		}
@@ -107,7 +109,7 @@ class Love2JS {
 			this.package.push(tree.name);
 			this.package.push(tree.version);
 			this.package.push(tree.description);
-			this.package.push(sprintfjs.sprintf('%s <%s>', 
+			this.package.push(sprintfjs.sprintf('%s <%s>',
 			tree.author, tree.email));
 			this.package.push(tree.license);
 			this.package.push(tree.homepage);
@@ -144,18 +146,18 @@ class Love2JS {
 		var data: string = JSON.stringify(
 			{
 				'name'	  	  : this.package[0],
-				'version'	  : this.package[1],
+				'version'	  	: this.package[1],
 				'description' : this.package[2],
-				'author'	  : this.package[3],
-				'license'	  : this.package[4],
+				'author'	  	: this.package[3],
+				'license'	  	: this.package[4],
 				'homepage'	  : this.package[5],
-				'scripts': {
+				'scripts' : {
 					'dist'  : 'gulp',
 					'clean' : 'gulp clean'
 				},
 				'preferGlobal' : false,
 				'dependencies' : {
-					'gulp' 		  : '~3.9.0',
+					'gulp' 		  	: '~3.9.0',
 					'gulp-concat' : '~2.5.2',
 					'gulp-rename' : '~1.2.2',
 					'gulp-insert' : '~0.4.0',
@@ -175,7 +177,7 @@ class Love2JS {
 		}
 		var libs: string[] = glob.sync('libs/*.js');
 		for(var i: number = 0; i < libs.length; i++) {
-			this.js.push(libs[i]);
+			this.js.push(sprintfjs.sprintf('\'%s\'', libs[i]));
 			fs.createReadStream(libs[i])
 			.pipe(fs.createWriteStream('html5/sprintf.min.js'));
 		}
@@ -187,22 +189,50 @@ class Love2JS {
 		var graphics: string[] = glob.sync('gfx/*.png');
 		for(var i: number = 0; graphics.length; i++) {
 			this.use_graphics = true;
-			var data: string = fs.readFileSync(graphics[i]);
+			if(graphics[i] == undefined) break;
+			var data: any = fs.readFileSync(graphics[i]);
 			var encoded: string = new Buffer(data).toString('base64');
-			this.gfx_fns.push(graphics[i].replace('\\\\', '/', graphic));
+			this.gfx_fns.push(graphics[i].replace('\\', '/'));
 			this.graphics.push('data:image/png;base64,' + encoded);
 		}
-		
-		if(use_graphics) {
-			this.js.push('graphics.js');
-			var data: string = '/* Graphics for generated game. */';
+
+		if(this.use_graphics) {
+			this.js.push('\'graphics.js\'');
+			var data: any = '/* Graphics for generated game. */';
 			data += '\nvar gfx_fns = [\n';
-			
+			for(var i: number = 0; i < this.gfx_fns.length; i++) {
+				if(i == this.gfx_fns.length - 1) {
+					data += sprintfjs.sprintf('\'%s\'\n];\n', this.gfx_fns[i]);
+				}
+				else data += sprintfjs.sprintf('\'%s\',\n', this.gfx_fns[i]);
+			}
+			data += '\nvar graphics = [\n';
+			for(var i: number = 0; i < this.graphics.length; i++) {
+				var graphic: string = this.graphics[i].replace(/\n/g, '');
+				var y: number = 0;
+				var x: number = 1;
+				var newGraphic: string  = '';
+				while(y < graphic.length) {
+					if(x == 81) {
+						newGraphic += graphic[y] + '\'+\n\'';
+						x = 1;
+					}
+					else newGraphic += graphic[y];
+					x++;
+					y++;
+				}
+				if(i == this.graphics.length - 1)
+				 	data += sprintfjs.sprintf('\'%s\'\n];\n', newGraphic);
+				else
+					data += sprintfjs.sprintf('\'%s\',\n', newGraphic);
+			}
+			fs.writeFileSync('graphics.js', data);
 		}
 	}
 
 	// Port each Love2d Lua file to JavaScript.
 	private generateJS(): void {
+		_print(this.verbose, 'Generating game scripts...');
 		// TODO
 	}
 
@@ -210,22 +240,21 @@ class Love2JS {
 	private generateGulpfile(): void {
 		_print(this.verbose, 'Generating Gulpfile.js...');
 		var year: number = new Date().getFullYear();
-		var copyright: string = sprintfjs.sprintf('Copyright %d %s', 
+		var copyright: string = sprintfjs.sprintf('Copyright %d %s',
 		year, this.package[3]);
-		var license: string = sprintfjs.sprintf('\\nReleased under the %s License.', 
+		var license: string = sprintfjs.sprintf('\\nReleased under the %s License.',
 		this.package[4]);
 		var uses: string = 'Uses sprintf-js | Alexandru Marasteanu <hello@alexei.ro> (http://alexei.ro/) | BSD-3-Clause';
-
 		var data: string = '/*\nGulpfile to generate minified JavaScript file for game from sources.\n*/\n';
 		data += 'var gulp = require(\'gulp\'),\n';
-		data += '\tfs = require(\'fs\'),\n';
+		data += '\t\t\tfs = require(\'fs\'),\n';
 		data += '\tconcat = require(\'gulp-concat\'),\n';
 		data += '\trename = require(\'gulp-rename\'),\n';
 		data += '\tinsert = require(\'gulp-insert\'),\n';
 		data += '\tuglify = require(\'gulp-uglify\'),\n\n';
 		data += 'gulp.task(\'js\', function() {\n';
-		data += sprintfjs.sprintf('\treturn gulp.src(%s)\n', this.js);
-		data += sprintfjs.sprintf('\t.pipe(concat(\'%s\'))\n', 
+		data += sprintfjs.sprintf('\treturn gulp.src([%s])\n', this.js);
+		data += sprintfjs.sprintf('\t.pipe(concat(\'%s.js\'))\n',
 		this.package[6]);
 		data += '\t.pipe(gulp.dest(\'dist\'))\n';
 		data += sprintfjs.sprintf('\t.pipe(rename(\'%s.min.js\'))\n',
@@ -234,7 +263,24 @@ class Love2JS {
 		data += sprintfjs.sprintf('\t.pipe(insert.prepend(\'/*\\n%s\\n\'+\n', this.package[0]);
 		data += sprintfjs.sprintf('\t\'%s\'+\n\t\'%s\\n%s\\n\\n\'+\n\t\'%s\\n*/\\n\'))\n', copyright, license, this.package[5], uses);
 		data += '\t.pipe(gulp.dest(\'dist\'));';
-		data + '\n};\n\n';
+		data += '\n};\n\n';
+		data += 'gulp.task(\'html\', function() {\n';
+		data += '\tvar html=\'<!DOCTYPE html>\\n<head>\'+\n';
+		data += sprintfjs.sprintf('\t\'\\n<title>%s</title>\\n\'+\n', this.package[0]);
+		data += sprintfjs.sprintf('\t\'<script type="text/javascript" src="%s.min.js"></script>\\n\'+\n', this.package[6]);
+		data += sprintfjs.sprintf('\t\'</head>\\n<body>\\n<h3 id="game-title" style="text-align: center;">%s</h3>\\n\'+\n', this.package[0]);
+		data += '\t\'<canvas id="game"></canvas>\\n</body>\\n</html>\\n\';\n';
+		data += '\tfs.writeFileSync(\'index.html\', html);\n';
+		data += '\treturn gulp.src(\'index.html\')\n';
+		data += '\t.pipe(gulp.dest(\'dist\'));';
+		data += '\n});\n\n';
+		data += 'gulp.task(\'clean\', function() {\n';
+		data += sprintfjs.sprintf('\tfs.unlinkSync(\'dist/%s.min.js\');\n', this.package[6]);
+		data += sprintfjs.sprintf('\tfs.unlinkSync(\'dist/%s.js\');\n', this.package[6]);
+		data += '\tfs.unlinkSync(\'index.html\');\n';
+		data += '\tfs.rmdir(\'dist\');';
+		data += '\n});\n\n';
+		data += 'gulp.task(\'default\', [\'js\',\'html\'], function(){});\n';
 		fs.writeFileSync('dGulpfile.js', data);
 	}
 }

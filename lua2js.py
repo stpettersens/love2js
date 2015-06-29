@@ -15,7 +15,7 @@ def lua2js(lua):
 	for line in js:
 		print(line)
 
-	#for ast in glob.glob('*.ast'):
-		#os.remove(ast)
+	for ast in glob.glob('*.ast'):
+		os.remove(ast)
 
 lua2js(sys.argv[1])

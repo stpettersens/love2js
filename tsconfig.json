@@ -1,0 +1,35 @@
+{
+    "version": "1.5.0-alpha",
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "removeComments": true,
+        "noLib": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true
+    },
+    "filesGlob": [
+        "./**/*.ts",
+        "!./node_modules/**/*.ts"
+    ],
+    "files": [
+        "./LuaASTParser.ts",
+        "./LuaASTParser.ts.backup.ts",
+        "./love2js-cli.ts",
+        "./love2js.ts",
+        "./lua2js.ts",
+        "./typings/glob.d.ts",
+        "./typings/luaparse.d.ts",
+        "./typings/magic-number.d.ts",
+        "./typings/node-7z.d.ts",
+        "./typings/node-getopt.d.ts",
+        "./typings/node.d.ts",
+        "./typings/pixl-xml.d.ts",
+        "./typings/prompt.d.ts",
+        "./typings/sprintf-js.d.ts",
+        "./typings/unzip.d.ts",
+        "./typings/xml.d.ts"
+    ]
+}

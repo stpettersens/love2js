@@ -4,9 +4,9 @@
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 declare module "node-7z" {
-	export function add(archive: string, files: string[], opts?: Object);
-	export function extract(archive: string, dest: string, opts?: Object);
-	export function extractFull(archive: string, dest: string, opts?: Object);
-	export function list(archive: string, opts?: Object);
-	export function update(archive: string, files: string[], opts?: Object);
+		export function add(archive: string, files: string[], options?: Object): void;
+		export function extract(archive: string, dest: string, options?: Object): void;
+		export function extractFull(archive: string, dest: string, options?: Object): void;
+		export function list(archive: string, options?: Object): void;
+		export function update(archive: string, files: string[], options?: Object): void;
 }

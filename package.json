@@ -26,9 +26,6 @@
   },
   "dependencies": {
     "glob": "~5.0.12",
-    "gulp": "~3.9.0",
-    "gulp-insert": "~0.4.0",
-    "gulp-typescript": "~2.7.7",
     "luaparse": "~0.1.15",
     "magic-number": "^0.1.2",
     "node-7z": "~0.3.0",
@@ -38,5 +35,10 @@
     "sprintf-js": "~1.0.2",
     "unzip": "~0.1.11",
     "xml": "~1.0.0"
+  },
+  "devDependencies": {
+    "gulp": "~3.9.0",
+    "gulp-typescript": "~2.7.7",
+    "gulp-replace": "^0.5.3"
   }
 }

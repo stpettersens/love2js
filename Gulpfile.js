@@ -4,14 +4,14 @@
 var gulp = require('gulp'),
       fs = require('fs'),
      tsc = require('gulp-typescript'),
-  insert = require('gulp-insert');
+ replace = require('gulp-replace');
 
 gulp.task('default', function() {
   return gulp.src('*.ts')
   .pipe(tsc({
-    removeComments: true,
     module: 'commonjs'
   }))
+  .pipe(replace(/\/{3}\s*<reference path=.*\/>\r*\n*/g, ''))
   .pipe(gulp.dest('.'));
 });
 
