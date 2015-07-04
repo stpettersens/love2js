@@ -3,7 +3,7 @@ Generate intermediate JavaScript from luaparser's JSON Abstract Syntax Tree.
 */
 
 class LuaASTParser {
-	
+
 	private debug: boolean;
 	private var_names: string[];
 	private var_values: string[];
@@ -98,6 +98,7 @@ class LuaASTParser {
 				if(body[key]['type'] == 'Identifier') {
 					variable = body[key]['name'];
 				}
+				else variable = body[key]['raw'];
 			}
 			else if(key == 'start') {
 				if(body[key]['type'].indexOf('Literal') != -1) {
@@ -108,9 +109,10 @@ class LuaASTParser {
 				step = '++';
 			}
 			else if(key == 'end') {
-				if(body[key]['type'].indexOf('Literal') != -1) {
-					end = parseInt(body[key]['raw']);
+				if(body[key]['argument']['type'].indexOf('Identifier') != -1) {
+					end = body[key]['argument']['name'];
 				}
+				else end = body[key]['argument']['raw'];
 				this.var_names.push(indent + 'for(var ' + variable + ' = ' + start + '; ' + variable + ' < ' + end + '; ' + variable + '++) {');
 				this.var_values.push('');
 			}
@@ -143,7 +145,7 @@ class LuaASTParser {
 						process.exit();
 
 						if(body[key][i]['condition']['left']['type'] == 'Identifier') {
-							
+
 						}
 						else if(body[key][i]['condition']['left']['type'] == 'BinaryExpression') {
 
@@ -185,7 +187,7 @@ class LuaASTParser {
 						}
 						else {
 							value = body[key][i]['name'];
-						}		
+						}
 						this.var_values.push(' = ' + value + ';');
 					}
 				}
@@ -211,7 +213,7 @@ class LuaASTParser {
 						}
 						else {
 							value = body[key][i]['name'];
-						}		
+						}
 						this.var_values.push(' = ' + value + ';');
 					}
 				}
